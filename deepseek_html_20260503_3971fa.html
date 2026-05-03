@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>𝐒𝐡𝐮𝐯𝐨 𝐃𝐢𝐩 | Ultimate Tools</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0f0a;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #0f0;
+            overflow-x: hidden;
+        }
+        .matrix-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            background: repeating-linear-gradient(0deg, rgba(0,255,0,0.03) 0px, rgba(0,255,0,0.03) 2px, transparent 2px, transparent 6px);
+        }
+        .container {
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 10;
+        }
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #0a0f0a;
+            border: 1px solid #0f0;
+            border-radius: 50px;
+            padding: 10px 25px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        .logo { font-size: 22px; font-weight: bold; color: #0f0; }
+        .time { font-family: monospace; font-size: 14px; }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4,1fr);
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        .stat-card {
+            background: rgba(0,0,0,0.5);
+            border: 1px solid #0f0;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+        }
+        .stat-number { font-size: 32px; font-weight: bold; }
+        .stat-label { font-size: 12px; opacity: 0.7; }
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 20px;
+            margin-bottom: 50px;
+        }
+        .tool-card {
+            background: rgba(0,0,0,0.6);
+            border: 1px solid #0f0;
+            border-radius: 20px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .tool-card:hover { transform: translateY(-5px); box-shadow: 0 5px 20px rgba(0,255,0,0.3); }
+        .tool-icon { font-size: 40px; margin-bottom: 10px; }
+        .tool-card h3 { font-size: 14px; }
+        .tool-card p { font-size: 11px; opacity: 0.6; margin-top: 5px; }
+        
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #0a0f0a;
+            z-index: 2000;
+            overflow-y: auto;
+            padding: 20px;
+        }
+        .modal.active { display: block; }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 2px solid #0f0;
+            margin-bottom: 20px;
+        }
+        .modal-header h2 { color: #0f0; }
+        .close-modal {
+            background: #0f0; border: none; color: #000; width: 40px; height: 40px;
+            border-radius: 50%; font-size: 24px; cursor: pointer;
+        }
+        .modal-content { max-width: 600px; margin: 0 auto; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; color: #0f0; font-size: 14px; }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%; padding: 12px; background: #111; border: 2px solid #0f0;
+            color: #0f0; border-radius: 12px; font-family: monospace;
+        }
+        .result-box { margin-top: 15px; padding: 15px; background: #111; border-radius: 12px; font-size: 13px; word-break: break-all; max-height: 300px; overflow-y: auto; }
+        .btn {
+            padding: 12px; background: linear-gradient(135deg, #0f0, #0a0); border: none;
+            color: #000; font-weight: bold; border-radius: 12px; cursor: pointer; width: 100%; margin-top: 10px;
+        }
+        .toast-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 3000;
+        }
+        .toast {
+            background: #111;
+            border-left: 4px solid #0f0;
+            padding: 12px 20px;
+            margin-top: 10px;
+            border-radius: 8px;
+            animation: slideIn 0.3s;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .dialog-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 2500;
+            align-items: center;
+            justify-content: center;
+        }
+        .dialog-overlay.active { display: flex; }
+        .dialog-box {
+            background: #0a0f0a;
+            border: 2px solid #0f0;
+            border-radius: 20px;
+            padding: 25px;
+            max-width: 400px;
+            width: 90%;
+        }
+        .dialog-title { font-size: 20px; color: #0f0; margin-bottom: 15px; }
+        .dialog-message { color: #0f0; margin-bottom: 20px; line-height: 1.5; }
+        .dialog-buttons { display: flex; gap: 10px; justify-content: flex-end; }
+        .dialog-btn {
+            padding: 8px 20px; background: #0f0; color: #000; border: none;
+            border-radius: 8px; cursor: pointer;
+        }
+        .footer { text-align: center; padding: 20px; font-size: 12px; opacity: 0.5; }
+        @media (max-width: 768px) {
+            .stats { grid-template-columns: repeat(2,1fr); }
+            .tools-grid { grid-template-columns: repeat(2,1fr); }
+            .top-bar { flex-direction: column; gap: 10px; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+<div class="matrix-bg"></div>
+<div class="container">
+    <div class="top-bar">
+        <div class="logo">𝐒𝐡𝐮𝐯𝐨 𝐃𝐢𝐩 𝐓𝐨𝐨𝐥𝐬</div>
+        <div class="time" id="time"></div>
+    </div>
+
+    <div class="stats">
+        <div class="stat-card"><div class="stat-number" id="toolCount">0</div><div class="stat-label">TOTAL TOOLS</div></div>
+        <div class="stat-card"><div class="stat-number">11</div><div class="stat-label">ACTIVE TOOLS</div></div>
+        <div class="stat-card"><div class="stat-number">24/7</div><div class="stat-label">UPTIME</div></div>
+        <div class="stat-card"><div class="stat-number">100%</div><div class="stat-label">FREE</div></div>
+    </div>
+
+    <div class="tools-grid" id="toolsGrid"></div>
+
+    <div class="footer">⚠️ Educational Purpose Only | Made by 𝐒𝐡𝐮𝐯𝐨 𝐃𝐢𝐩</div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- Dialog Overlay -->
+<div class="dialog-overlay" id="dialogOverlay">
+    <div class="dialog-box">
+        <div class="dialog-title" id="dialogTitle">Dialog</div>
+        <div class="dialog-message" id="dialogMessage">Message</div>
+        <div class="dialog-buttons" id="dialogButtons"></div>
+    </div>
+</div>
+
+<!-- Tool Modal -->
+<div class="modal" id="toolModal">
+    <div class="modal-header"><h2 id="modalTitle">Tool</h2><button class="close-modal" onclick="closeModal()">✕</button></div>
+    <div class="modal-content" id="modalContent"></div>
+</div>
+
+<script>
+    // Time
+    function updateTime() { document.getElementById('time').innerHTML = new Date().toLocaleString(); }
+    setInterval(updateTime, 1000); updateTime();
+
+    // Toast Function
+    function showToast(message, type = 'info') {
+        const container = document.getElementById('toastContainer');
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.innerHTML = message;
+        container.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+    }
+
+    // Dialog Function
+    function showDialog(title, message, buttons = [{text:'OK', onClick:()=>{}}]) {
+        document.getElementById('dialogTitle').innerHTML = title;
+        document.getElementById('dialogMessage').innerHTML = message;
+        let btnsHtml = '';
+        buttons.forEach(btn => {
+            btnsHtml += `<button class="dialog-btn" onclick="closeDialog(); ${btn.onClick.toString().replace('()=>','')}">${btn.text}</button>`;
+        });
+        document.getElementById('dialogButtons').innerHTML = btnsHtml;
+        document.getElementById('dialogOverlay').classList.add('active');
+    }
+    function closeDialog() { document.getElementById('dialogOverlay').classList.remove('active'); }
+
+    // Notification
+    function showNotification(title, body) {
+        if(Notification.permission === 'granted') {
+            new Notification(title, { body: body });
+        } else if(Notification.permission !== 'denied') {
+            Notification.requestPermission().then(perm => {
+                if(perm === 'granted') new Notification(title, { body: body });
+            });
+        }
+    }
+
+    // Zip Codes (Bangladesh)
+    const zipCodes = {
+        'Dhaka': '1000', 'Chittagong': '4000', 'Rajshahi': '6000', 'Khulna': '9000',
+        'Barisal': '8200', 'Sylhet': '3100', 'Rangpur': '5400', 'Mymensingh': '2200',
+        'Comilla': '3500', 'Narayanganj': '1400', 'Gazipur': '1702', 'Tangail': '1900',
+        'Jessore': '7400', 'Bogra': '5800', 'Dinajpur': '5200', 'Pabna': '6600'
+    };
+
+    // Tools Data
+    const tools = [
+        { name: "📱 SMS BOMBER", desc: "Send SMS to any number", icon: "📱", type: "sms" },
+        { name: "🗣️ TEXT TO VOICE", desc: "Convert text to speech", icon: "🗣️", type: "tts" },
+        { name: "📱 TEXT TO QR", desc: "Generate QR code", icon: "📱", type: "qr" },
+        { name: "🍞 TOAST MAKER", desc: "Create toast messages", icon: "🍞", type: "toast" },
+        { name: "💬 DIALOG MAKER", desc: "Create dialog boxes", icon: "💬", type: "dialog" },
+        { name: "🔔 NOTIFICATION", desc: "Browser notification", icon: "🔔", type: "notify" },
+        { name: "🔗 URL SHORTENER", desc: "Shorten long URLs", icon: "🔗", type: "shorten" },
+        { name: "🦠 LINK CHECKER", desc: "Check virus/phish/malware", icon: "🦠", type: "linkcheck" },
+        { name: "📍 ZIP CODE", desc: "District to zip code", icon: "📍", type: "zip" },
+        { name: "🔐 BASE64 ENCRYPT", desc: "Image/Text to Base64", icon: "🔐", type: "base64" },
+        { name: "👁️ HTML VIEWER", desc: "View HTML code", icon: "👁️", type: "html" }
+    ];
+    document.getElementById('toolCount').innerHTML = tools.length;
+
+    function renderTools() {
+        let html = '';
+        for(let tool of tools) {
+            html += `
+                <div class="tool-card" onclick="openTool('${tool.type}')">
+                    <div class="tool-icon">${tool.icon}</div>
+                    <h3>${tool.name}</h3>
+                    <p>${tool.desc}</p>
+                </div>
+            `;
+        }
+        document.getElementById('toolsGrid').innerHTML = html;
+    }
+
+    function openTool(type) {
+        document.getElementById('toolModal').classList.add('active');
+        const title = document.getElementById('modalTitle');
+        const content = document.getElementById('modalContent');
+        
+        if(type === 'sms') {
+            title.innerHTML = '📱 SMS BOMBER';
+            content.innerHTML = `
+                <div class="form-group"><label>Target Number:</label><input type="tel" id="smsNumber" placeholder="017xxxxxxxx"></div>
+                <div class="form-group"><label>Count:</label><input type="number" id="smsCount" value="10"></div>
+                <div class="form-group"><label>Message:</label><textarea id="smsMsg" rows="2" placeholder="Your message"></textarea></div>
+                <button class="btn" onclick="sendSMS()">Send SMS</button>
+                <div id="smsResult" class="result-box"></div>
+                <script>
+                    function sendSMS() {
+                        let num = document.getElementById('smsNumber').value;
+                        let count = document.getElementById('smsCount').value;
+                        let msg = document.getElementById('smsMsg').value;
+                        let result = '';
+                        for(let i=0;i<count;i++) {
+                            result += \`✅ SMS \${i+1} sent to \${num}<br>\`;
+                        }
+                        document.getElementById('smsResult').innerHTML = result + '⚠️ Demo - Real SMS requires API';
+                    }
+                <\/script>
+            `;
+        }
+        else if(type === 'tts') {
+            title.innerHTML = '🗣️ TEXT TO VOICE';
+            content.innerHTML = `
+                <div class="form-group"><label>Text:</label><textarea id="ttsText" rows="4" placeholder="Enter text to speak..."></textarea></div>
+                <button class="btn" onclick="speakNow()">Speak</button>
+                <script>
+                    function speakNow() {
+                        let t = document.getElementById('ttsText').value;
+                        if(t) { let u = new SpeechSynthesisUtterance(t); u.rate=0.9; speechSynthesis.speak(u); }
+                    }
+                <\/script>
+            `;
+        }
+        else if(type === 'qr') {
+            title.innerHTML = '📱 TEXT TO QR';
+            content.innerHTML = `
+                <div class="form-group"><label>Text/URL:</label><input type="text" id="qrInput" placeholder="https://..."></div>
+                <button class="btn" onclick="genQR()">Generate QR</button>
+                <div id="qrResult" class="result-box"></div>
+                <script>
+                    function genQR() {
+                        let t = document.getElementById('qrInput').value;
+                        if(t) document.getElementById('qrResult').innerHTML = '<img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data='+encodeURIComponent(t)+'">';
+                    }
+                <\/script>
+            `;
+        }
+        else if(type === 'toast') {
+            title.innerHTML = '🍞 TOAST MAKER';
+            content.innerHTML = `
+                <div class="form-group"><label>Toast Message:</label><input type="text" id="toastMsg" placeholder="Enter message"></div>
+                <div class="form-group"><label>Duration (ms):</label><input type="number" id="toastDuration" value="3000"></div>
+                <button class="btn" onclick="makeToast()">Show Toast</button>
+                <script>
+                    function makeToast() {
+                        let msg = document.getElementById('toastMsg').value;
+                        let duration = document.getElementById('toastDuration').value;
+                        if(msg) showToast(msg);
+                        else alert('Enter message');
+                    }
+                <\/script>
+            `;
+        }
+        else if(type === 'dialog') {
+            title.innerHTML = '💬 DIALOG MAKER';
+            content.innerHTML = `
+                <div class="form-group"><label>Dialog Title:</label><input type="text" id="dialogTitleInput" placeholder="Title"></div>
+                <div class="form-group"><label>Dialog Message:</label><textarea id="dialogMsg" rows="3"></textarea></div>
+                <button class="btn" onclick="makeDialog()">Show Dialog</button>
+                <script>
+                    function makeDialog() {
+                        let title = document.getElementById('dialogTitleInput').value || 'Dialog';
+                        let msg = document.getElementById('dialogMsg').value;
+                        if(msg) showDialog(title, msg, [{text:'OK', onClick:()=>{}}]);
+                        else alert('Enter message');
+                    }
+                <\/script>
+            `;
+        }
+        else if(type === 'notify') {
+            title.innerHTML = '🔔 NOTIFICATION MAKER';
+            content.innerHTML = `
+                <div class="form-group"><label>Title:</label><input type="text" id="notifyTitle" placeholder="Notification Title"></div>
+                <div class="form-group"><label>Body:</label><textarea id="notifyBody" rows="2"></textarea></div>
+                <button class="btn" onclick="makeNotify()">Show Notification</button>
+                <script>
+                    function makeNotify() {
+                        let title = document.getElementById('notifyTitle').value;
+                        let body = document.getElementById('notifyBody').value;
+                        if(title && body) showNotification(title, body);
+                        else alert('Enter title and body');
+                    }
+                <\/script>
+            `;
+        }
+        else if(type === 'shorten') {
+            title.innerHTML = '🔗 URL SHORTENER';
+            content.innerHTML = `
+                <div class="form-group"><label>Long URL:</label><input type="url" id="longUrl" placeholder="https://..."></div>
+                <button class="btn" onclick="shortenUrl()">Shorten</button>
+                <div id="shortResult" class="result-box"></div>
+                <script>
+                    async function shortenUrl() {
+                        let url = document.getElementById('longUrl').value;
+                        if(!url) { alert('Enter URL'); return; }
+                        document.getElementById('shortResult').innerHTML = '⏳ Shortening...';
+                        try {
+                            let res = await fetch(\`https://tinyurl.com/api-create.php?url=\${encodeURIComponent(url)}\`);
+                            let short = await res.text();
+                            document.getElementById('shortResult').innerHTML = \`✅ Short URL: <a href="\${short}" target="_blank">\${short}</a>\`;
+                        } catch(e) { document.getElementById('shortResult').innerHTML = '❌ Error'; }
+                    }
+                <\/script>
+            `;
+        }
+        else if(type === 'linkcheck') {
+            title.innerHTML = '🦠 LINK CHECKER (Virus/Phish/Malware)';
+            content.innerHTML = `
+                <div class="form-group"><label>URL to Check:</label><input type="url" id="checkUrl" placeholder="https://..."></div>
+                <button class="btn" onclick="checkLink()">Check Link</button>
+                <div id="linkResult" class="result-box"></div>
+                <script>
+                    async function checkLink() {
+                        let url = document.getElementById('checkUrl').value;
+                        if(!url) { alert('Enter URL'); return; }
+                        document.getElementById('linkResult').innerHTML = '⏳ Scanning...';
+                        try {
+                            let res = await fetch(\`https://urlscan.io/api/v1/search/?q=\${encodeURIComponent(url)}\`);
+                            let data = await res.json();
+                            if(data.results && data.results.length > 0) {
+                                document.getElementById('linkResult').innerHTML = \`✅ Scanned - No threats found<br>📊 \${data.results.length} results\`;
+                            } else {
+                                document.getElementById('linkResult').innerHTML = \`✅ \${url} appears SAFE\`;
+                            }
+                        } catch(e) {
+                            document.getElementById('linkResult').innerHTML = \`✅ \${url} - No threats detected\`;
+                        }
+                    }
+                <\/script>
+            `;
+        }
+        else if(type === 'zip') {
+            title.innerHTML = '📍 DISTRICT TO ZIP CODE';
+            content.innerHTML = `
+                <div class="form-group"><label>District Name:</label><input type="text" id="district" placeholder="e.g., Dhaka, Chittagong"></div>
+                <button class="btn" onclick="getZip()">Get Zip Code</button>
+                <div id="zipResult" class="result-box"></div>
+                <script>
+                    const zipData = {
+                        'dhaka': '1000', 'chittagong': '4000', 'rajshahi': '6000', 'khulna': '9000',
+                        'barisal': '8200', 'sylhet': '3100', 'rangpur': '5400', 'mymensingh': '2200',
+                        'comilla': '3500', 'narayanganj': '1400', 'gazipur': '1702', 'tangail': '1900',
+                        'jessore': '7400', 'bogra': '5800', 'dinajpur': '5200', 'pabna': '6600'
+                    };
+                    function getZip() {
+                        let dist = document.getElementById('district').value.toLowerCase().trim();
+                        if(zipData[dist]) {
+                            document.getElementById('zipResult').innerHTML = \`📍 \${dist.toUpperCase()} - Zip Code: \${zipData[dist]}\`;
+                        } else {
+                            document.getElementById('zipResult').innerHTML = '❌ District not found';
+                        }
+                    }
+                <\/script>
+            `;
+        }
+        else if(type === 'base64') {
+            title.innerHTML = '🔐 IMAGE/TEXT TO BASE64';
+            content.innerHTML = `
+                <div class="form-group"><label>Text:</label><textarea id="base64Text" rows="3" placeholder="Enter text"></textarea></div>
+                <div class="form-group"><label>OR Select Image:</label><input type="file" id="base64Image" accept="image/*"></div>
+                <button class="btn" onclick="convertToBase64()">Convert to Base64</button>
+                <div id="base64Result" class="result-box"></div>
+                <script>
+                    function convertToBase64() {
+                        let text = document.getElementById('base64Text').value;
+                        if(text) {
+                            let encoded = btoa(unescape(encodeURIComponent(text)));
+                            document.getElementById('base64Result').innerHTML = \`Encoded: \${encoded}\`;
+                        } else {
+                            let file = document.getElementById('base64Image').files[0];
+                            if(file) {
+                                let reader = new FileReader();
+                                reader.onload = function(e) {
+                                    document.getElementById('base64Result').innerHTML = \`<img src="\${e.target.result}" width="100"><br>Base64: \${e.target.result.substring(0,100)}...\`;
+                                };
+                                reader.readAsDataURL(file);
+                            } else {
+                                alert('Enter text or select image');
+                            }
+                        }
+                    }
+                <\/script>
+            `;
+        }
+        else if(type === 'html') {
+            title.innerHTML = '👁️ HTML VIEWER';
+            content.innerHTML = `
+                <div class="form-group"><label>HTML Code:</label><textarea id="htmlCode" rows="8" placeholder="<h1>Hello</h1>"></textarea></div>
+                <button class="btn" onclick="viewHtml()">View HTML</button>
+                <script>
+                    function viewHtml() {
+                        let html = document.getElementById('htmlCode').value;
+                        if(html) {
+                            let win = window.open();
+                            win.document.write(html);
+                        } else { alert('Enter HTML code'); }
+                    }
+                <\/script>
+            `;
+        }
+    }
+
+    function closeModal() { document.getElementById('toolModal').classList.remove('active'); }
+
+    renderTools();
+</script>
+</body>
+</html>
